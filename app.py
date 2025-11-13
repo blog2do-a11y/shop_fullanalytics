@@ -225,6 +225,8 @@ def stats():
     else:
         df.fillna('', inplace=True)
         df['Order Month'] = df['Order Month'].astype(str)
+
+        # Monthly stats
         months = sorted(df['Order Month'].unique())
         monthly = []
         for m in months:
@@ -232,14 +234,27 @@ def stats():
             count = int(sub.shape[0])
             revenue = float(sub['Sale Price'].astype(float).sum())
             cost = float(sub['Cost Price'].astype(float).sum())
-            other = float(sub.get('Other Cost', 0).astype(float).sum()) if 'Other Cost' in sub else 0.0
+            other = float(sub['Other Cost'].astype(float).sum()) if 'Other Cost' in sub.columns else 0.0
             profit = revenue - cost - other
-            monthly.append({'month': m, 'count': count, 'revenue': revenue, 'cost': cost, 'other': other, 'profit': profit})
+            monthly.append({
+                'month': m,
+                'count': count,
+                'revenue': revenue,
+                'cost': cost,
+                'other': other,
+                'profit': profit
+            })
+
+        # Platform stats
         df['Platform'] = df['Social Link'].apply(detect_platform)
         platform_counts = df['Platform'].value_counts().to_dict()
-        df['Order DateOnly'] = df['Order DateTime'].apply(lambda x: str(x).split(' ')[0] if x else '')
+
+        # Date counts
+        df['Order DateTime'] = pd.to_datetime(df['Order DateTime'], errors='coerce')
+        df['Order DateOnly'] = df['Order DateTime'].dt.date
         date_counts_series = df['Order DateOnly'].value_counts().sort_index()
-        date_counts = [{'date': d, 'count': int(c)} for d,c in date_counts_series.items()]
+        date_counts = [{'date': str(d), 'count': int(c)} for d,c in date_counts_series.items()]
+
     return render_template('stats.html', monthly=monthly, platforms=platform_counts, date_counts=date_counts)
 
 @app.route('/accounting')
