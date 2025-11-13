@@ -1,0 +1,18 @@
+
+body{font-family: Arial, Helvetica, sans-serif; background:#f7f8fb; margin:0; padding:18px;}
+.container{max-width:1200px;margin:0 auto;background:#fff;padding:18px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.06);}
+h1{margin-top:0;}
+.form-field{margin-bottom:12px;}
+.form-field label{display:block;font-weight:600;margin-bottom:6px;}
+.form-field input, .form-field textarea{width:100%;padding:12px;font-size:15px;border:1px solid #e6e9ef;border-radius:8px;box-sizing:border-box;}
+.actions{margin-top:12px;margin-bottom:12px;}
+.btn{display:inline-block;padding:8px 12px;background:#2b8fef;color:#fff;border-radius:6px;text-decoration:none;}
+.orders-wrap{display:flex;gap:20px;}
+.orders-list{flex:0 0 360px; max-height:78vh; overflow:auto;border-right:1px solid #f0f0f0;padding-right:10px;}
+.order-details{flex:1; padding:10px; max-height:78vh; overflow:auto;}
+.order-card{padding:10px;border-bottom:1px solid #eee;cursor:pointer;}
+.order-card:hover{background:#fafcff;}
+.order-img{max-width:100%;height:auto;border-radius:6px;}
+.small-note{color:#666;font-size:13px;}
+table{width:100%;border-collapse:collapse;margin-top:12px;}
+th,td{padding:8px;border-bottom:1px solid #eee;text-align:left;}
