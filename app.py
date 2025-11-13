@@ -216,25 +216,36 @@ def detect_platform(link):
 @app.route('/stats')
 @login_required
 def stats():
-    ensure_workbook()
+    ensure_workbook()  # Ստուգում, որ Excel ֆայլը գոյություն ունի
     df = pd.read_excel(EXCEL_FILE, engine='openpyxl')
+
     if df.empty:
         monthly = []
         platform_counts = {}
         date_counts = []
     else:
-        df.fillna('', inplace=True)
-        df['Order Month'] = df['Order Month'].astype(str)
+        # --- String սյուների լրացում ---
+        string_cols = ['Social Link', 'Order Month', 'Comment']
+        for col in string_cols:
+            if col in df.columns:
+                df[col].fillna('', inplace=True)
 
-        # Monthly stats
+        # --- Թվային սյուների ապահովումը ---
+        numeric_cols = ['Sale Price','Cost Price','Other Cost']
+        for col in numeric_cols:
+            if col in df.columns:
+                df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0.0)
+
+        # --- Monthly stats ---
+        df['Order Month'] = df['Order Month'].astype(str)
         months = sorted(df['Order Month'].unique())
         monthly = []
         for m in months:
             sub = df[df['Order Month']==m]
             count = int(sub.shape[0])
-            revenue = float(sub['Sale Price'].astype(float).sum())
-            cost = float(sub['Cost Price'].astype(float).sum())
-            other = float(sub['Other Cost'].astype(float).sum()) if 'Other Cost' in sub.columns else 0.0
+            revenue = float(sub['Sale Price'].sum())
+            cost = float(sub['Cost Price'].sum())
+            other = float(sub['Other Cost'].sum()) if 'Other Cost' in sub.columns else 0.0
             profit = revenue - cost - other
             monthly.append({
                 'month': m,
@@ -245,17 +256,23 @@ def stats():
                 'profit': profit
             })
 
-        # Platform stats
+        # --- Platform stats ---
         df['Platform'] = df['Social Link'].apply(detect_platform)
         platform_counts = df['Platform'].value_counts().to_dict()
 
-        # Date counts
+        # --- Date counts ---
         df['Order DateTime'] = pd.to_datetime(df['Order DateTime'], errors='coerce')
         df['Order DateOnly'] = df['Order DateTime'].dt.date
         date_counts_series = df['Order DateOnly'].value_counts().sort_index()
-        date_counts = [{'date': str(d), 'count': int(c)} for d,c in date_counts_series.items()]
+        date_counts = [{'date': str(d), 'count': int(c)} for d, c in date_counts_series.items()]
 
-    return render_template('stats.html', monthly=monthly, platforms=platform_counts, date_counts=date_counts)
+    return render_template(
+        'stats.html',
+        monthly=monthly,
+        platforms=platform_counts,
+        date_counts=date_counts
+    )
+
 
 @app.route('/accounting')
 @login_required
